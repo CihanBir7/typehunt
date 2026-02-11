@@ -1,20 +1,31 @@
-# typehunt
+# TypeHunt 
 
-Find duplicate `type`, `interface`, and `enum` definitions across your TypeScript codebase.
+Hunt down duplicate **TypeScript declarations** — `type`, `interface`, and `enum` — across your codebase.
 
-typehunt scans your source files, extracts every type declaration, and reports duplicates by **name** (same identifier declared in multiple files) and by **shape** (structurally identical types hiding behind different names).
+TypeHunt scans your source files, extracts declarations via the TypeScript Compiler API, and reports duplicates by:
+
+- **Name**: the same identifier declared in multiple files
+- **Shape**: structurally identical declarations hiding behind different names
+
+> **Node.js:** 18+ recommended (the CLI is built for modern Node runtimes)
+
+---
 
 ## Install
 
+### Global install
 ```bash
-npm install -g typehunt
-```
-
-Or run directly with npx:
-
-```bash
+npm i -g typehunt
 npx typehunt
 ```
+
+### Add to your project (recommended)
+```bash
+npm i -D typehunt
+npx typehunt
+```
+
+---
 
 ## Quick Start
 
@@ -22,29 +33,36 @@ npx typehunt
 # Scan the src/ directory (default)
 npx typehunt
 
-# Use your tsconfig to determine which files to scan
+# Use your tsconfig to determine which files to scan (respects include/exclude/extends)
 npx typehunt --tsconfig tsconfig.json
 
-# Output as JSON
+# Output as JSON (great for tooling)
 npx typehunt --json
+
+# Generate a Markdown report (PR-friendly)
+npx typehunt --md --output report.md
 
 # Fail in CI when duplicates are found
 npx typehunt --fail-on-duplicates
 ```
 
-## How It Works
+---
 
-typehunt uses the TypeScript compiler API to parse every `.ts`, `.tsx`, `.mts`, and `.d.ts` file and extract declarations. It then groups them in two ways:
+## How it works
+
+TypeHunt parses `.ts`, `.tsx`, `.mts`, and `.d.ts` files and extracts declarations. It then groups them in two ways:
 
 ### Name matching
-
-Finds types with the **same identifier** declared in multiple files. For example, two files both exporting `interface User { ... }`.
+Finds declarations with the **same identifier** declared in multiple files.
 
 ### Shape matching
+Finds declarations that are **structurally identical** even if they have different names.
 
-Finds types that are **structurally identical** even if they have different names. The comparison normalizes whitespace, strips comments, replaces the type name with a placeholder, and unifies `interface` / `type` syntax differences. This catches cases like:
+The comparison normalizes whitespace, strips comments, replaces the name with a placeholder, and normalizes `interface` ↔ `type` shape differences.
 
-```typescript
+Example that will be detected as the same **shape**:
+
+```ts
 // src/models/user.ts
 interface UserResponse {
   id: string;
@@ -60,7 +78,9 @@ type UserDTO = {
 };
 ```
 
-## Example Output
+---
+
+## Example output (text)
 
 ```
 ── Summary ──────────────────────────────────────────────
@@ -85,7 +105,9 @@ type UserDTO = {
     shape:   type __NAME__ = { id: string; name: string; email: string; }
 ```
 
-## CLI Options
+---
+
+## CLI options
 
 ```
 Usage:
@@ -96,66 +118,104 @@ Options:
   --tsconfig <path>              Path to tsconfig.json — respects include/exclude
   --mode <name|shape|both>       Duplicate detection mode (default: both)
   --min <number>                 Minimum duplicates per group (default: 2)
-  --exclude <token,...>          Exclude paths matching the given tokens (repeatable)
+
+  --exclude <token,...>          Exclude by matching tokens against relative paths (repeatable).
+                                 Match rules: equals, prefix (token/...), or substring.
+
   --no-enums                     Skip enum declarations
   --include-reexports            Include re-exports (excluded by default)
+
   --format <text|json|markdown>  Output format (default: text)
   --json                         Shortcut for --format json
   --markdown, --md               Shortcut for --format markdown
   --output <path>                Save output to a file
+
   --fail-on-duplicates           Exit with code 1 when duplicates are found
   --help, -h                     Show this help
 ```
 
-## Output Formats
+---
+
+## Output formats
 
 ### Text (default)
-
-Human-readable output printed to the terminal.
+Readable output printed to the terminal.
 
 ### JSON
-
 ```bash
 npx typehunt --json
 ```
 
-Structured output for programmatic consumption. Includes full metadata, all duplicate groups, and declaration snippets.
+Useful for programmatic consumption (dashboards, CI annotations, custom checks).
+
+Minimal example shape (trimmed):
+
+```json
+{
+  "filesScanned": 124,
+  "declarationsScanned": 312,
+  "duplicateNameGroups": [
+    {
+      "name": "User",
+      "count": 3,
+      "declarations": [
+        {
+          "file": "src/models/user.ts",
+          "line": 5,
+          "kind": "interface",
+          "name": "User",
+          "isReExport": false
+        }
+      ]
+    }
+  ]
+}
+```
 
 ### Markdown
-
 ```bash
 npx typehunt --md --output report.md
 ```
 
-A formatted report with tables — useful for pasting into PRs or documentation.
+Generates a formatted report with tables — perfect for PRs and internal docs.
 
-## CI Integration
+---
 
-Use `--fail-on-duplicates` to make typehunt exit with code 1 when duplicates are detected:
+## CI integration
+
+Use `--fail-on-duplicates` to make TypeHunt exit with code **1** when duplicates are detected:
 
 ```yaml
 # GitHub Actions example
-- name: Check for duplicate types
+- name: Check for duplicate TypeScript declarations
   run: npx typehunt --fail-on-duplicates
 ```
 
-## Excluding Files
+---
 
-The `--exclude` flag accepts comma-separated tokens. A file is excluded if any token matches its relative path by exact match, prefix, or substring:
+## Excluding files
+
+The `--exclude` flag accepts comma-separated tokens (and is repeatable). A file is excluded if any token matches its relative path by **exact match**, **prefix**, or **substring**:
 
 ```bash
 # Exclude generated code and vendor directories
 npx typehunt --exclude generated,vendor
 
-# Exclude multiple patterns (flag is repeatable)
+# Repeatable flag
 npx typehunt --exclude generated --exclude __tests__
 ```
 
 When using `--tsconfig`, the tsconfig's own `include`/`exclude` rules are applied first, then `--exclude` filters further.
 
+---
+
 ## Re-exports
 
-By default, re-exports like `export { Foo } from "./bar"` are excluded from the analysis since they don't introduce new type definitions. Use `--include-reexports` to include them.
+By default, re-exports like `export { Foo } from "./bar"` are excluded because they don’t introduce new declarations and can add noise in “barrel export” codebases.
+
+Use `--include-reexports` if you want to include them in analysis.
+
+---
 
 ## License
 

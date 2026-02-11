@@ -19,7 +19,9 @@
   "scripts": {
     "dev": "tsx src/cli.ts",
     "build": "tsup src/cli.ts --format esm --target node18 --outDir dist --clean",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm test && npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:local": "node dist/cli.js --help"
   },
   "dependencies": {
@@ -29,7 +31,8 @@
     "@biomejs/biome": "2.3.14",
     "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
-    "tsx": "^4.0.0"
+    "tsx": "^4.0.0",
+    "vitest": "^4.0.18"
   },
   "publishConfig": {
     "access": "public"
@@ -48,6 +51,7 @@
     "ast",
     "refactor",
     "lint",
+    "duplicate",
     "code-quality"
   ]
 }
