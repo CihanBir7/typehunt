@@ -10,6 +10,7 @@ import {
   buildJsonPayload,
   printTextReport,
   renderMarkdown,
+  renderTextReport,
 } from "./formatter.js";
 import {
   getTypeFilesFromDirectory,
@@ -193,6 +194,10 @@ async function run(): Promise<number> {
 
     if (options.outputFile) {
       await writeOutputFile(options.outputFile, renderedJson, "JSON");
+      console.log(
+        `${meta.duplicateCount} duplicate group(s) found across ${meta.filesScanned} files.`,
+      );
+      return options.failOnDuplicates && duplicateCount > 0 ? 1 : 0;
     }
     process.stdout.write(renderedJson);
   } else if (options.format === "markdown") {
@@ -200,20 +205,22 @@ async function run(): Promise<number> {
 
     if (options.outputFile) {
       await writeOutputFile(options.outputFile, md, "Markdown");
+      console.log(
+        `${meta.duplicateCount} duplicate group(s) found across ${meta.filesScanned} files.`,
+      );
+      return options.failOnDuplicates && duplicateCount > 0 ? 1 : 0;
     }
     process.stdout.write(md);
   } else {
     printTextReport(nameGroups, shapeGroups, meta);
 
     if (options.outputFile) {
-      const payload = buildJsonPayload(
+      const renderedText = `${renderTextReport(
         nameGroups,
         shapeGroups,
-        { ...meta, root: options.tsconfig ?? options.root, errors },
-        options.mode,
-      );
-      const renderedJson = `${JSON.stringify(payload, null, 2)}\n`;
-      await writeOutputFile(options.outputFile, renderedJson, "JSON");
+        meta,
+      )}\n`;
+      await writeOutputFile(options.outputFile, renderedText, "text");
     }
   }
 
