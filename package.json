@@ -1,12 +1,12 @@
 {
   "name": "typehunt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find duplicate type/interface/enum definitions across a TypeScript codebase (name + shape matching).",
   "author": "Cihan Bir",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "typehunt": "./dist/cli.js"
+    "typehunt": "dist/cli.js"
   },
   "files": [
     "dist",
@@ -39,12 +39,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nicecihan/typehunt.git"
+    "url": "git+https://github.com/CihanBir7/typehunt.git"
   },
   "bugs": {
-    "url": "https://github.com/nicecihan/typehunt/issues"
+    "url": "https://github.com/CihanBir7/typehunt/issues"
   },
-  "homepage": "https://github.com/nicecihan/typehunt#readme",
+  "homepage": "https://github.com/CihanBir7/typehunt#readme",
   "keywords": [
     "typescript",
     "cli",

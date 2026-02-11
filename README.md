@@ -1,4 +1,7 @@
-# TypeHunt 
+# TypeHunt
+
+[![npm version](https://img.shields.io/npm/v/typehunt.svg)](https://www.npmjs.com/package/typehunt)
+[![license](https://img.shields.io/npm/l/typehunt.svg)](https://github.com/CihanBir7/typehunt/blob/main/LICENSE)
 
 Hunt down duplicate **TypeScript declarations** — `type`, `interface`, and `enum` — across your codebase.
 
@@ -7,22 +10,18 @@ TypeHunt scans your source files, extracts declarations via the TypeScript Compi
 - **Name**: the same identifier declared in multiple files
 - **Shape**: structurally identical declarations hiding behind different names
 
-> **Node.js:** 18+ recommended (the CLI is built for modern Node runtimes)
+> **Node.js 18+** required
 
 ---
 
 ## Install
 
-### Global install
 ```bash
-npm i -g typehunt
-npx typehunt
-```
-
-### Add to your project (recommended)
-```bash
+# Add to your project (recommended)
 npm i -D typehunt
-npx typehunt
+
+# Or install globally
+npm i -g typehunt
 ```
 
 ---
@@ -48,14 +47,16 @@ npx typehunt --fail-on-duplicates
 
 ---
 
-## How it works
+## How It Works
 
 TypeHunt parses `.ts`, `.tsx`, `.mts`, and `.d.ts` files and extracts declarations. It then groups them in two ways:
 
 ### Name matching
+
 Finds declarations with the **same identifier** declared in multiple files.
 
 ### Shape matching
+
 Finds declarations that are **structurally identical** even if they have different names.
 
 The comparison normalizes whitespace, strips comments, replaces the name with a placeholder, and normalizes `interface` ↔ `type` shape differences.
@@ -80,7 +81,7 @@ type UserDTO = {
 
 ---
 
-## Example output (text)
+## Example Output
 
 ```
 ── Summary ──────────────────────────────────────────────
@@ -107,7 +108,7 @@ type UserDTO = {
 
 ---
 
-## CLI options
+## CLI Options
 
 ```
 Usage:
@@ -136,19 +137,19 @@ Options:
 
 ---
 
-## Output formats
+## Output Formats
 
 ### Text (default)
+
 Readable output printed to the terminal.
 
 ### JSON
+
 ```bash
 npx typehunt --json
 ```
 
 Useful for programmatic consumption (dashboards, CI annotations, custom checks).
-
-Minimal example shape (trimmed):
 
 ```json
 {
@@ -173,6 +174,7 @@ Minimal example shape (trimmed):
 ```
 
 ### Markdown
+
 ```bash
 npx typehunt --md --output report.md
 ```
@@ -181,7 +183,7 @@ Generates a formatted report with tables — perfect for PRs and internal docs.
 
 ---
 
-## CI integration
+## CI Integration
 
 Use `--fail-on-duplicates` to make TypeHunt exit with code **1** when duplicates are detected:
 
@@ -193,7 +195,7 @@ Use `--fail-on-duplicates` to make TypeHunt exit with code **1** when duplicates
 
 ---
 
-## Excluding files
+## Excluding Files
 
 The `--exclude` flag accepts comma-separated tokens (and is repeatable). A file is excluded if any token matches its relative path by **exact match**, **prefix**, or **substring**:
 
@@ -211,7 +213,7 @@ When using `--tsconfig`, the tsconfig's own `include`/`exclude` rules are applie
 
 ## Re-exports
 
-By default, re-exports like `export { Foo } from "./bar"` are excluded because they don’t introduce new declarations and can add noise in “barrel export” codebases.
+By default, re-exports like `export { Foo } from "./bar"` are excluded because they don't introduce new declarations and can add noise in "barrel export" codebases.
 
 Use `--include-reexports` if you want to include them in analysis.
 
